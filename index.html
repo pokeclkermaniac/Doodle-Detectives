@@ -186,12 +186,12 @@ const PLAIN={hair:'short',eyes:'dots',brows:'normal',nose:'button',mouth:'smile'
 const OPT={
  hair:[['bald','bald','Baldy'],['afro','afro','Fro'],['mohawk','mohawk','Mo'],['spiky','spikes','Spike'],['bun','bun','Bun'],['pigtails','pigtails','Pigtails'],['mullet','mullet','Mullet'],['beehive','beehive','Beehive'],['curly','curls','Curly'],['combover','combover','Combover'],['flattop','flat top','Flattop']],
  eyes:[['star','star','Starry'],['specs','glasses','Specs'],['shades','sunglasses','Shady'],['patch','eyepatch','Patch'],['googly','googly','Googly'],['sleepy','sleepy','Sleepy'],['monocle','monocle','Fancy']],
- brows:[['unibrow','unibrow','Unibrow'],['angry','angry','Grumpy'],['bushy','bushy','Bushy']],
- nose:[['big','nose','Schnozz'],['pointy','pointy','Pointy'],['snout','snout','Snoot','animals']],
+ brows:[['unibrow','unibrow','Unibrow'],['angry','angry','Grumpy'],['bushy','bushy','Bushy'],['surprised','surprised','Gasp'],['arched','arched','Arch'],['worried','worried','Worried'],['quizzical','raised','Quizzy'],['browless','eyebrows','Browless']],
+ nose:[['big','nose','Schnozz'],['pointy','pointy','Pointy'],['snout','snout','Snoot','animals'],['long','long','Beaky'],['hooked','hooked','Hook'],['clown','clown','Honker'],['tiny','tiny','Button'],['wide','wide','Wide'],['nosering','nose ring','Ringo']],
  mouth:[['gap','gap','Gappy'],['onetooth','tooth','One-Tooth'],['braces','braces','Brace-Face'],['stache','mustache','Stache'],['beard','beard','Beardy'],['buck','buck teeth','Bucky'],['frown','frown','Frowny'],['tongue','tongue','Blep'],['fangs','fangs','Fang','halloween']],
  extra:[['freckles','freckles','Freckles'],['mole','mole','Moley'],['bandage','bandage','Band-Aid'],['earrings','earrings','Bling'],['scar','scar','Scratch'],['blush','blush','Rosy'],['stitches','stitches','Stitch','halloween'],['whiskers','whiskers','Whiskers','animals']],
  hat:[['beanie','beanie','Beanie'],['cap','cap','Cappy'],['tophat','top hat','Topper'],['party','party hat','Party'],['witch','witch','Witchy','halloween'],['horns','horns','Horns','fantasy|halloween'],['crown','crown','King','fantasy'],['wizard','wizard','Wizard','fantasy'],['catears','cat','Kitty','animals'],['bunny','bunny','Bun-Bun','animals'],['bearears','bear','Bear','animals'],['headset','headset','Headset','office'],['pencil','pencil','Pencil','office']],
- ears:[['bigears','ears','Jug-Ears'],['elf','elf','Elfie','fantasy']],
+ ears:[['bigears','ears','Jug-Ears'],['elf','elf','Elfie','fantasy'],['small','small','Teeny'],['earmuffs','earmuffs','Muffs'],['headphones','headphones','DJ'],['piercings','piercings','Pierced'],['floppy','floppy','Floppy','animals'],['bat','bat','Batty','halloween'],['fins','fins','Fishy','fantasy']],
  outfit:[['tie','tie','Tie','office'],['badge','name tag','Name-Tag','office']],
  skin:[['green','green','Greenie','halloween']]
 };
@@ -253,10 +253,19 @@ function suspectSVG(s,o={}){
   case 'flattop':front.push(`<path d="M60 112 L62 56 L138 56 L140 112 C130 90 118 86 100 86 C82 86 70 90 60 112Z" fill="${hc}" ${st}/>`);break;
  }
  // ears
- let ears='';
- if(s.ears==='bigears')ears=`<ellipse cx="56" cy="120" rx="14" ry="20" fill="${skin}" ${st}/><ellipse cx="144" cy="120" rx="14" ry="20" fill="${skin}" ${st}/>`;
- else if(s.ears==='elf')ears=`<polygon points="64,110 34,92 62,134" fill="${skin}" ${st}/><polygon points="136,110 166,92 138,134" fill="${skin}" ${st}/>`;
- else ears=`<circle cx="61" cy="122" r="9" fill="${skin}" ${st}/><circle cx="139" cy="122" r="9" fill="${skin}" ${st}/>`;
+ let ears='',earsF='';const EN=`<circle cx="61" cy="122" r="9" fill="${skin}" ${st}/><circle cx="139" cy="122" r="9" fill="${skin}" ${st}/>`;
+ switch(s.ears){
+  case 'bigears':ears=`<ellipse cx="56" cy="120" rx="14" ry="20" fill="${skin}" ${st}/><ellipse cx="144" cy="120" rx="14" ry="20" fill="${skin}" ${st}/>`;break;
+  case 'elf':ears=`<polygon points="64,110 34,92 62,134" fill="${skin}" ${st}/><polygon points="136,110 166,92 138,134" fill="${skin}" ${st}/>`;break;
+  case 'small':ears=`<circle cx="62" cy="122" r="5" fill="${skin}" ${st}/><circle cx="138" cy="122" r="5" fill="${skin}" ${st}/>`;break;
+  case 'earmuffs':earsF=`<path d="M58 118 C54 58 146 58 142 118" stroke="#c2185b" stroke-width="6" fill="none"/><circle cx="58" cy="122" r="15" fill="#f06292" ${st}/><circle cx="142" cy="122" r="15" fill="#f06292" ${st}/><circle cx="54" cy="118" r="4" fill="#fff" opacity=".6"/><circle cx="138" cy="118" r="4" fill="#fff" opacity=".6"/>`;break;
+  case 'headphones':ears=EN;earsF=`<path d="M56 116 C52 54 148 54 144 116" stroke="#222" stroke-width="7" fill="none"/><rect x="44" y="106" width="20" height="32" rx="8" fill="#1e88e5" ${st}/><rect x="136" y="106" width="20" height="32" rx="8" fill="#1e88e5" ${st}/>`;break;
+  case 'piercings':ears=EN;earsF=[[53,116],[52,124],[55,131],[147,116],[148,124],[145,131]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="2.6" fill="#ffd54f" stroke="${K}" stroke-width="1"/>`).join('');break;
+  case 'floppy':ears=`<ellipse cx="54" cy="138" rx="13" ry="30" transform="rotate(18 54 138)" fill="${hc}" ${st}/><ellipse cx="146" cy="138" rx="13" ry="30" transform="rotate(-18 146 138)" fill="${hc}" ${st}/>`;break;
+  case 'bat':ears=`<polygon points="64,104 26,64 40,98 24,118 64,130" fill="#4a3f55" ${st}/><polygon points="136,104 174,64 160,98 176,118 136,130" fill="#4a3f55" ${st}/>`;break;
+  case 'fins':ears=`<polygon points="64,106 32,94 38,112 30,130 64,136" fill="#4db6ac" ${st}/><polygon points="136,106 168,94 162,112 170,130 136,136" fill="#4db6ac" ${st}/><path d="M60 110 L38 104 M60 120 L36 120 M60 130 L36 134 M140 110 L162 104 M140 120 L164 120 M140 130 L164 134" stroke="${K}" stroke-width="1.2"/>`;break;
+  default:ears=EN;
+ }
  // body
  let body=`<rect x="88" y="150" width="24" height="44" fill="${sk2}" ${st}/>`+
   `<path d="M14 240 C20 206 48 192 78 188 L122 188 C152 192 180 206 186 240Z" fill="#f26b1d" ${st}/>`+
@@ -278,12 +287,17 @@ function suspectSVG(s,o={}){
   case 'monocle':eyes=E(84,112)+E(116,112)+`<circle cx="116" cy="112" r="13" fill="rgba(255,240,180,.3)" stroke="#c9a227" stroke-width="3"/><path d="M128 118 Q136 150 128 176" stroke="#c9a227" stroke-width="1.6" fill="none"/>`;break;
  }
  // brows
- let brows='';const bc=s.hair==='bald'?K:hc;
+ let brows='';const bc=s.hair==='bald'?K:shade(hc,-.4);
  switch(s.brows){
   case 'normal':brows=`<path d="M75 97 L93 94 M107 94 L125 97" stroke="${bc}" stroke-width="3.2" stroke-linecap="round"/>`;break;
   case 'unibrow':brows=`<path d="M72 98 Q100 86 128 98" stroke="${bc}" stroke-width="7" fill="none" stroke-linecap="round"/>`;break;
   case 'angry':brows=`<path d="M74 91 L94 99 M106 99 L126 91" stroke="${bc}" stroke-width="5" stroke-linecap="round"/>`;break;
   case 'bushy':brows=`<path d="M73 96 L94 92 M106 92 L127 96" stroke="${bc}" stroke-width="10" stroke-linecap="round"/>`;break;
+  case 'surprised':brows=`<path d="M74 95 Q84 84 95 92 M105 92 Q116 84 126 95" stroke="${bc}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;break;
+  case 'arched':brows=`<path d="M74 98 L86 89 L95 95 M105 95 L114 89 L126 98" stroke="${bc}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;break;
+  case 'worried':brows=`<path d="M74 98 L94 89 M106 89 L126 98" stroke="${bc}" stroke-width="4" stroke-linecap="round"/>`;break;
+  case 'quizzical':brows=`<path d="M75 98 L93 97 M105 93 Q116 82 127 92" stroke="${bc}" stroke-width="4" fill="none" stroke-linecap="round"/>`;break;
+  case 'browless':brows='';break;
  }
  if(s.eyes==='shades'||s.eyes==='star')brows=brows.replace(/M75 97 L93 94 M107 94 L125 97/,'M75 91 L93 88 M107 88 L125 91');
  // nose
@@ -292,6 +306,12 @@ function suspectSVG(s,o={}){
   case 'button':nose=`<path d="M95 130 Q100 135 105 130" stroke="${K}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;break;
   case 'big':nose=`<circle cx="100" cy="129" r="12" fill="${sk2}" ${st}/>`;break;
   case 'pointy':nose=`<path d="M99 114 L120 134 L99 136" fill="${skin}" ${st}/>`;break;
+  case 'long':nose=`<path d="M98 116 L136 128 Q138 134 132 135 L99 137" fill="${skin}" ${st}/>`;break;
+  case 'hooked':nose=`<path d="M99 110 Q124 118 114 138 Q106 141 97 135" fill="${skin}" ${st}/>`;break;
+  case 'clown':nose=`<circle cx="100" cy="128" r="11" fill="#e53935" ${st}/><circle cx="96" cy="124" r="3" fill="#fff" opacity=".7"/>`;break;
+  case 'tiny':nose=`<circle cx="98" cy="130" r="1.6" fill="${K}"/><circle cx="102" cy="130" r="1.6" fill="${K}"/>`;break;
+  case 'wide':nose=`<ellipse cx="100" cy="130" rx="17" ry="8" fill="${sk2}" ${st}/><ellipse cx="93" cy="131" rx="3" ry="2.2" fill="${K}"/><ellipse cx="107" cy="131" rx="3" ry="2.2" fill="${K}"/>`;break;
+  case 'nosering':nose=`<path d="M95 130 Q100 135 105 130" stroke="${K}" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="104" cy="135" r="4.5" fill="none" stroke="#e0b100" stroke-width="2.4"/>`;break;
   case 'snout':nose=`<ellipse cx="100" cy="130" rx="13" ry="9" fill="#f4a7b9" ${st}/><ellipse cx="95" cy="130" rx="2.4" ry="3.4" fill="${K}"/><ellipse cx="105" cy="130" rx="2.4" ry="3.4" fill="${K}"/>`;break;
  }
  // mouth
@@ -341,7 +361,7 @@ function suspectSVG(s,o={}){
  if(o.num!=null)plac=`<rect x="64" y="206" width="72" height="28" rx="3" fill="#111"/><text x="100" y="227" font-size="20" text-anchor="middle" fill="#fff" font-family="'Permanent Marker',cursive">#${o.num}</text>`;
  else if(o.placard!==false){const n=s.nick||'',fs=Math.min(13,150/Math.max(6,n.length)*1.55);plac=`<rect x="36" y="204" width="128" height="32" rx="3" fill="#111"/><text x="100" y="216" font-size="7" text-anchor="middle" fill="#f26b1d" font-family="sans-serif" font-weight="bold" letter-spacing="2">SUSPECT</text><text x="100" y="231" font-size="${fs.toFixed(1)}" text-anchor="middle" fill="#fff" font-family="'Permanent Marker',cursive">${esc(n)}</text>`}
  const wh=o.export?' width="400" height="480"':'';
- return `<svg class="sus" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg"${wh}>${bg}${back.join('')}${body}${ears}${head}${extra}${eyes}${brows}${nose}${mouth}${front.join('')}${hat}${plac}</svg>`;
+ return `<svg class="sus" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg"${wh}>${bg}${back.join('')}${body}${ears}${head}${extra}${eyes}${nose}${mouth}${front.join('')}${brows}${earsF}${hat}${plac}</svg>`;
 }
 
 /* ---------- drawing board ---------- */
