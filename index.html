@@ -91,7 +91,9 @@ label.lbl{font-weight:700;font-size:14px;display:block;margin-bottom:6px}
 .hash{font-weight:800;font-size:18px;color:var(--muted)}
 .hex{flex:1;min-width:0;padding:9px 10px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--ink);font:800 17px ui-monospace,Menlo,monospace;letter-spacing:2px;text-transform:uppercase}
 .hexerr{font-size:12px;color:#c62828;font-weight:700;min-width:48px}
-.pal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.tool.col{flex:0 0 48px}
+.cdot{width:24px;height:24px;border-radius:50%;border:2px solid rgba(0,0,0,.3);display:block;background:#111}
+.pal{margin-top:-4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
 .pal[hidden]{display:none}
 .sw{aspect-ratio:1;border-radius:50%;border:2px solid rgba(0,0,0,.25);padding:0}
 .sw.on{outline:3px solid var(--accent);outline-offset:2px}
@@ -364,7 +366,7 @@ function drawBoardBG(x){
 function drawStrokes(x,strokes){
  x.lineCap='round';x.lineJoin='round';
  for(const s of strokes){const p=s.p;if(s.f||p.length<2)continue;
-  x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle='#111';x.fillStyle='#111';x.lineWidth=s.w;
+  x.globalCompositeOperation=s.e?'destination-out':'source-over';x.strokeStyle=s.c||'#111111';x.fillStyle=s.c||'#111111';x.lineWidth=s.w;
   if(p.length===2){x.beginPath();x.arc(p[0],p[1],s.w/2,0,Math.PI*2);x.fill();continue}
   x.beginPath();x.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)x.lineTo(p[i],p[i+1]);x.stroke()}
  x.globalCompositeOperation='source-over';
@@ -386,21 +388,21 @@ function renderInk(ctx,strokes,sc){
   drawStrokes(lw,[s]);drawStrokes(ld,[s]);
   if(s.e){fd.save();fd.scale(sc,sc);drawStrokes(fd,[s]);fd.restore()}}
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(Fd,0,0,ctx.canvas.width,ctx.canvas.height);ctx.drawImage(Ld,0,0,ctx.canvas.width,ctx.canvas.height);ctx.restore()}
-function enc(strokes){return strokes.filter(s=>s.p.length>=2).map(s=>{if(s.f)return 'F'+String(s.c).slice(1)+':'+s.p[0]+','+s.p[1];const p=s.p,o=[p[0],p[1]];for(let i=2;i<p.length;i+=2)o.push(p[i]-p[i-2],p[i+1]-p[i-1]);return s.w+(s.e?'e':'')+':'+o.join(',')}).join('|')}
-function dec(str){if(!str)return[];return str.split('|').map(t=>{const[h,b]=t.split(':');const n=(b||'').split(',').map(Number);const p=[];let x=0,y=0;for(let i=0;i+1<n.length;i+=2){if(i===0){x=n[0];y=n[1]}else{x+=n[i];y+=n[i+1]}p.push(x,y)}if(h[0]==='F'){const hx=h.slice(1,7).toLowerCase();return{f:1,c:/^[0-9a-f]{6}$/.test(hx)?'#'+hx:'#111111',p:p.slice(0,2),w:0}}return{w:parseInt(h)||4,e:h.endsWith('e')?1:0,p}}).filter(s=>s.p.length>=2&&s.p.every(Number.isFinite))}
+function enc(strokes){return strokes.filter(s=>s.p.length>=2).map(s=>{if(s.f)return 'F'+String(s.c).slice(1)+':'+s.p[0]+','+s.p[1];const p=s.p,o=[p[0],p[1]];for(let i=2;i<p.length;i+=2)o.push(p[i]-p[i-2],p[i+1]-p[i-1]);return s.w+(s.e?'e':'')+(!s.e&&s.c&&s.c!=='#111111'?'c'+s.c.slice(1):'')+':'+o.join(',')}).join('|')}
+function dec(str){if(!str)return[];return str.split('|').map(t=>{const[h,b]=t.split(':');const n=(b||'').split(',').map(Number);const p=[];let x=0,y=0;for(let i=0;i+1<n.length;i+=2){if(i===0){x=n[0];y=n[1]}else{x+=n[i];y+=n[i+1]}p.push(x,y)}if(h[0]==='F'){const hx=h.slice(1,7).toLowerCase();return{f:1,c:/^[0-9a-f]{6}$/.test(hx)?'#'+hx:'#111111',p:p.slice(0,2),w:0}}const cm=/c([0-9a-f]{6})$/i.exec(h);return{w:parseInt(h)||4,e:/^\d+e/.test(h)?1:0,c:cm?'#'+cm[1].toLowerCase():undefined,p}}).filter(s=>s.p.length>=2&&s.p.every(Number.isFinite))}
 function encCapped(strokes){let ss=strokes.map(s=>({...s,p:s.p.slice()}));let e=enc(ss);let g=0;while(e.length>44000&&g++<6){ss=ss.map(s=>{if(s.f)return s;const p=[];for(let i=0;i<s.p.length;i+=2)if((i/2)%2===0||i===s.p.length-2)p.push(s.p[i],s.p[i+1]);return{...s,p}});e=enc(ss)}return e}
 const SKURL=new Map();
 function sketchURL(strokes,key){if(key&&SKURL.has(key))return SKURL.get(key);const c=document.createElement('canvas');c.width=BW*2;c.height=BH*2;const x=c.getContext('2d');x.scale(2,2);drawBoardBG(x);x.setTransform(1,0,0,1,0,0);renderInk(x,strokes||[],2);const u=c.toDataURL('image/png');if(key)SKURL.set(key,u);return u}
 function makeBoard(host,opt){
  host.innerHTML='<canvas></canvas><canvas></canvas>';
- const[bgc,ink]=$$('canvas',host);const B={strokes:[],size:6,eraser:false,fill:false,color:LS.get('fillc','#f26b1d'),locked:false,lineDone:false,onchange:null};
+ const[bgc,ink]=$$('canvas',host);const B={strokes:[],size:6,eraser:false,fill:false,color:LS.get('penc','#111111'),locked:false,lineDone:false,onchange:null};
  let cur=null,sc=1;
  function fit(){const w=host.clientWidth||300,d=window.devicePixelRatio||1;sc=w*d/BW;for(const c of[bgc,ink]){c.width=Math.round(BW*sc);c.height=Math.round(BH*sc)}const x=bgc.getContext('2d');x.setTransform(sc,0,0,sc,0,0);drawBoardBG(x);redraw()}
  function redraw(){const x=ink.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,ink.width,ink.height);renderInk(x,B.strokes,sc)}
  function pos(e){const r=ink.getBoundingClientRect();return[Math.round((e.clientX-r.left)/r.width*BW),Math.round((e.clientY-r.top)/r.height*BH)]}
  const can=()=>!B.locked&&opt.enabled()&&!(opt.oneLine&&opt.oneLine()&&B.lineDone);
- ink.addEventListener('pointerdown',e=>{e.preventDefault();if(B.fill){if(B.locked||!opt.enabled())return;const[x,y]=pos(e);if(x<0||y<0||x>=BW||y>=BH)return;B.strokes.push({f:1,c:B.color,p:[x,y],w:0});redraw();SFX.pop&&SFX.pop();B.onchange&&B.onchange();return}if(!can()){if(opt.oneLine&&opt.oneLine()&&B.lineDone)toast('One line only! Undo to start over.');return}try{ink.setPointerCapture(e.pointerId)}catch(_){}const[x,y]=pos(e);cur={w:B.eraser?20:B.size,e:B.eraser?1:0,p:[x,y]};B.strokes.push(cur);const c=ink.getContext('2d');c.setTransform(sc,0,0,sc,0,0);drawStrokes(c,[cur])});
- ink.addEventListener('pointermove',e=>{if(!cur)return;e.preventDefault();if(!opt.enabled()){end();return}const[x,y]=pos(e),p=cur.p,lx=p[p.length-2],ly=p[p.length-1];if(Math.abs(x-lx)+Math.abs(y-ly)<2)return;p.push(x,y);const c=ink.getContext('2d');c.setTransform(sc,0,0,sc,0,0);c.lineCap='round';c.lineJoin='round';c.lineWidth=cur.w;c.strokeStyle='#111';c.globalCompositeOperation=cur.e?'destination-out':'source-over';c.beginPath();c.moveTo(lx,ly);c.lineTo(x,y);c.stroke();c.globalCompositeOperation='source-over'});
+ ink.addEventListener('pointerdown',e=>{e.preventDefault();if(B.fill){if(B.locked||!opt.enabled())return;const[x,y]=pos(e);if(x<0||y<0||x>=BW||y>=BH)return;B.strokes.push({f:1,c:B.color,p:[x,y],w:0});redraw();SFX.pop&&SFX.pop();B.onchange&&B.onchange();return}if(!can()){if(opt.oneLine&&opt.oneLine()&&B.lineDone)toast('One line only! Undo to start over.');return}try{ink.setPointerCapture(e.pointerId)}catch(_){}const[x,y]=pos(e);cur={w:B.eraser?20:B.size,e:B.eraser?1:0,c:B.eraser?undefined:B.color,p:[x,y]};B.strokes.push(cur);const c=ink.getContext('2d');c.setTransform(sc,0,0,sc,0,0);drawStrokes(c,[cur])});
+ ink.addEventListener('pointermove',e=>{if(!cur)return;e.preventDefault();if(!opt.enabled()){end();return}const[x,y]=pos(e),p=cur.p,lx=p[p.length-2],ly=p[p.length-1];if(Math.abs(x-lx)+Math.abs(y-ly)<2)return;p.push(x,y);const c=ink.getContext('2d');c.setTransform(sc,0,0,sc,0,0);c.lineCap='round';c.lineJoin='round';c.lineWidth=cur.w;c.strokeStyle=cur.c||'#111111';c.globalCompositeOperation=cur.e?'destination-out':'source-over';c.beginPath();c.moveTo(lx,ly);c.lineTo(x,y);c.stroke();c.globalCompositeOperation='source-over'});
  function end(){if(!cur)return;cur=null;if(opt.oneLine&&opt.oneLine())B.lineDone=true;B.onchange&&B.onchange()}
  ink.addEventListener('pointerup',end);ink.addEventListener('pointercancel',end);ink.addEventListener('pointerleave',end);
  B.undo=()=>{const z=B.strokes.pop();if(!(z&&z.f))B.lineDone=false;redraw()};
@@ -410,17 +412,23 @@ function makeBoard(host,opt){
  B.destroy=()=>window.removeEventListener('resize',fit);
  return B;
 }
-function toolsHTML(){return `<div class="tools"><button class="tool" data-sz="3"><span class="dot" style="width:5px;height:5px"></span>S</button><button class="tool on" data-sz="6"><span class="dot" style="width:9px;height:9px"></span>M</button><button class="tool" data-sz="12"><span class="dot" style="width:15px;height:15px"></span>L</button><button class="tool" data-er="1">Erase</button><button class="tool" data-fl="1">🪣</button><button class="tool" data-undo="1">↶</button></div><div class="pal" hidden><div class="hexrow"><input type="color" class="cpick" aria-label="Pick any color"><span class="hash">#</span><input class="hex" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Hex color"><span class="hexerr"></span></div><div class="sws">${PAL.map(c=>`<button class="sw" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div></div>`}
-function wireTools(root,B){const pal=$('.pal',root),fl=$('[data-fl]',root);const setFill=v=>{B.fill=v;fl.classList.toggle('on',v);pal.hidden=!v;fl.style.background=v?B.color:'';fl.style.borderColor=v?B.color:''};
+function toolsHTML(){return `<div class="tools"><button class="tool col" data-col="1" aria-label="Color"><span class="cdot"></span></button><button class="tool" data-sz="3" aria-label="Small pen"><span class="dot" style="width:5px;height:5px"></span>S</button><button class="tool on" data-sz="6" aria-label="Medium pen"><span class="dot" style="width:9px;height:9px"></span>M</button><button class="tool" data-sz="12" aria-label="Large pen"><span class="dot" style="width:15px;height:15px"></span>L</button><button class="tool" data-er="1" aria-label="Eraser">Erase</button><button class="tool" data-fl="1" aria-label="Paint bucket">🪣</button><button class="tool" data-undo="1" aria-label="Undo">↶</button></div><div class="pal" hidden><div class="hexrow"><input type="color" class="cpick" aria-label="Pick any color"><span class="hash">#</span><input class="hex" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Hex color"><span class="hexerr"></span></div><div class="sws">${PAL.map(c=>`<button class="sw" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}</div></div>`}
+function wireTools(root,B){
+ const pal=$('.pal',root),fl=$('[data-fl]',root),er=$('[data-er]',root),col=$('[data-col]',root),cdot=$('.cdot',root),szs=$$('[data-sz]',root);
  const cp=$('.cpick',root),hx=$('.hex',root),he=$('.hexerr',root);
- const setColor=(c,from)=>{c=c.toLowerCase();B.color=c;LS.set('fillc',c);if(from!=='hex')hx.value=c.slice(1).toUpperCase();if(from!=='pick')cp.value=c;he.textContent='';$$('.sw',root).forEach(x=>x.classList.toggle('on',x.dataset.c===c));setFill(true)};
+ const mode=m=>{B.fill=m==='fill';B.eraser=m==='erase';fl.classList.toggle('on',B.fill);er.classList.toggle('on',B.eraser);szs.forEach(x=>x.classList.toggle('on',m==='pen'&&+x.dataset.sz===B.size))};
+ const setColor=(c,from)=>{c=c.toLowerCase();B.color=c;LS.set('penc',c);cdot.style.background=c;if(from!=='hex')hx.value=c.slice(1).toUpperCase();if(from!=='pick')cp.value=c;he.textContent='';$$('.sw',root).forEach(x=>x.classList.toggle('on',x.dataset.c===c));if(B.eraser)mode('pen')};
+ col.onclick=()=>{pal.hidden=!pal.hidden;col.classList.toggle('on',!pal.hidden)};
  $$('.sw',root).forEach(w=>w.onclick=()=>setColor(w.dataset.c));
  cp.oninput=()=>setColor(cp.value,'pick');
  hx.oninput=()=>{const v=hx.value.replace(/[^0-9a-f]/gi,'').slice(0,6);if(v!==hx.value)hx.value=v.toUpperCase();if(v.length===6)setColor('#'+v,'hex');else he.textContent=v.length?'6 digits':''};
  hx.onblur=()=>{if(!/^[0-9a-f]{6}$/i.test(hx.value)){hx.value=B.color.slice(1).toUpperCase();he.textContent=''}};
- hx.value=B.color.slice(1).toUpperCase();cp.value=B.color;$$('.sw',root).forEach(x=>x.classList.toggle('on',x.dataset.c===B.color));
- $$('.tool',root).forEach(b=>b.onclick=()=>{if(b.dataset.undo){B.undo();return}if(b.dataset.fl){const v=!B.fill;setFill(v);if(v){B.eraser=false;$('[data-er]',root).classList.remove('on');$$('[data-sz]',root).forEach(x=>x.classList.remove('on'))}else $$('[data-sz]',root).forEach(x=>x.classList.toggle('on',+x.dataset.sz===B.size));return}if(b.dataset.er){B.eraser=!B.eraser;b.classList.toggle('on',B.eraser);if(B.eraser){setFill(false);$$('[data-sz]',root).forEach(x=>x.classList.remove('on'))}return}setFill(false);B.eraser=false;$('[data-er]',root).classList.remove('on');B.size=+b.dataset.sz;$$('[data-sz]',root).forEach(x=>x.classList.toggle('on',x===b))})}
-
+ szs.forEach(b=>b.onclick=()=>{B.size=+b.dataset.sz;mode('pen')});
+ er.onclick=()=>mode(B.eraser?'pen':'erase');
+ fl.onclick=()=>mode(B.fill?'pen':'fill');
+ $('[data-undo]',root).onclick=()=>B.undo();
+ setColor(B.color);mode('pen');
+}
 /* ---------- audio ---------- */
 const AU={ctx:null,mode:LS.get('audio',2)};
 function actx(){if(!AU.ctx){try{AU.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return AU.ctx}
@@ -463,7 +471,7 @@ function closeModal(){const m=$('#modal');m.hidden=true;m.innerHTML=''}
 const HOWTO=`<h3>How to play</h3><p class="muted" style="margin:0">Goal: draw the suspect using only the Witness's description.</p><ol class="howto">
 <li><b>The Witness</b> (picked at random each case) sees a suspect card and describes it: out loud if you're together, or by typing clues if you're apart. Artists can't ask questions.</li>
 <li><b>You can't say</b> the 2–3 orange words on the card. Artists don't see them. Hear one? Tap <b>Busted!</b> and type the word. If it's on the card, the Witness loses 1 point. Wrong guesses cost nothing (3 tries per case).</li>
-<li><b>Sketch Artists</b> (everyone else) draw at the same time before the timer runs out: black marker in 3 sizes, eraser, undo, and a 🪣 paint bucket for color fills.</li>
+<li><b>Sketch Artists</b> (everyone else) draw at the same time before the timer runs out: a marker in 3 sizes and any color, eraser, undo, and a 🪣 paint bucket for color fills.</li>
 <li><b>Chaos rules</b> (if the host turns them on): some cases add a twist: draw with your other hand, blind draw (your ink is invisible), or one continuous line.</li>
 <li><b>The lineup:</b> each artist sees 4 lookalike suspects and picks the one they think they drew.</li>
 <li><b>The reveal:</b> drumroll, flip! With 2+ artists, the Witness picks the best sketch.</li>

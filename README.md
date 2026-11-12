@@ -30,7 +30,7 @@ A multiplayer party game for phones, for 2–8 players. One player is the **Witn
 - Card packs: Classic, Halloween, Office, Fantasy, Animals
 - Difficulty: Easy / Medium / Hard / Mix
 - Optional chaos rules: wrong hand, blind draw, one continuous line
-- Drawing tools: black marker in 3 sizes, eraser, undo, and a **paint bucket with 24-bit hex colors** (color picker, hex input, and 16 presets taken from the suspect generator)
+- Drawing tools: marker in 3 sizes, eraser, undo, and a paint bucket, all using **24-bit hex colors** (color picker, hex input, and 16 presets taken from the suspect generator)
 - Flip-card reveal with drumroll, end-of-game "rap sheet" gallery, shareable side-by-side images
 - Music and sound effects (with a mute button), vibration, dark mode that follows the phone
 - Unlockable visual styles: Mugshot (default), Noir, Cartoon, Notebook
