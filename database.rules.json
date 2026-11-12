@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && $room.matches(/^dd-[a-z]{4}$/)",
+        "presence": {
+          "$peer": {
+            ".write": "auth != null && $room.matches(/^dd-[a-z]{4}$/) && $peer.beginsWith(auth.uid + '_')",
+            ".validate": "newData.child('p').isString() && newData.child('p').val().length <= 4096"
+          }
+        },
+        "events": {
+          "$ev": {
+            ".write": "auth != null && $room.matches(/^dd-[a-z]{4}$/) && ((!data.exists() && newData.child('u').val() === auth.uid) || (!newData.exists() && (data.child('u').val() === auth.uid || data.child('ts').val() < now - 300000)))",
+            ".validate": "newData.child('t').isString() && newData.child('d').isString() && newData.child('d').val().length <= 4096 && newData.child('p').isString() && newData.child('p').val().beginsWith(auth.uid + '_') && newData.child('ts').val() === now"
+          }
+        }
+      }
+    }
+  }
+}

@@ -38,14 +38,20 @@ A multiplayer party game for phones, for 2–8 players. One player is the **Witn
 
 ## Running it
 
-It's a single self-contained file: `index.html` (HTML + CSS + JS, no build step).
+It's a single self-contained file, `index.html` (HTML + CSS + JS, no build step), hosted on GitHub Pages.
 
-- **Practice mode** works anywhere: just open `index.html` in a browser.
-- **Multiplayer** currently uses the live-room service of Claude-hosted pages (`window.claude.use("room")`), so it only works when the page runs on claude.ai. To run it anywhere else, swap that service for your own realtime backend (Firebase, Supabase Realtime, PartyKit, or a small WebSocket server). The network layer is small: a host broadcasts game state on the `st` topic, players send moves on `act`, and sketches travel in chunks on `sk` / `need`.
+**Multiplayer** uses Firebase Realtime Database with anonymous sign-in, so players never create accounts: they just enter a name and a 4-letter room code.
+
+- Config: `FIREBASE_CONFIG` near the multiplayer section of `index.html` (Firebase web config values are public by design).
+- Security rules: `database.rules.json`. Paste these into Realtime Database → Rules.
+- Required Firebase setup: **Authentication → Anonymous** enabled, and a **Realtime Database** created.
+
+How it works: the room creator is the host and broadcasts the game state; players send their moves; sketches travel in chunks. Rooms live under `rooms/dd-XXXX` with `presence` (who's here, removed automatically on disconnect) and short-lived `events` (cleaned up after about 20 seconds).
+
+When the page runs as a Claude artifact on claude.ai, it uses Claude's built-in live rooms instead. **Practice solo** works anywhere, offline included.
 
 ## Roadmap
 
-- Own realtime backend so anyone can join from a link
 - iOS and Android apps
 - AI-illustrated suspects
 - Public matchmaking
